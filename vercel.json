@@ -3,6 +3,7 @@
   "functions": {
     "index.py": {
       "maxDuration": 60,
+      "includeFiles": "vendor/lib/libgomp.so.1",
       "excludeFiles": "{**/tests/**,**/test/**,**/testing/**,**/benchmarks/**,**/docs/**,**/doc/**,**/__pycache__/**,**/*.pyc,**/.pytest_cache/**,**/.ruff_cache/**,**/Dockerfile*,**/*.md,**/README*}"
     }
   }
