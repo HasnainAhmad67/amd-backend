@@ -1,0 +1,270 @@
+{
+  "kind": "sensor",
+  "version": "0.1.0",
+  "created_at": "2026-10-17T15:38:49+00:00",
+  "data_source": "synthetic-ai4i-rules",
+  "n_rows": 10000,
+  "split": {
+    "train": 7000,
+    "val": 1500,
+    "test": 1500,
+    "seed": 42
+  },
+  "features": [
+    "quality_code",
+    "air_temperature_k",
+    "process_temperature_k",
+    "rotational_speed_rpm",
+    "torque_nm",
+    "tool_wear_min",
+    "temp_delta_k",
+    "power_w",
+    "strain_nm_min"
+  ],
+  "feature_labels": {
+    "quality_code": "Product quality (L/M/H)",
+    "air_temperature_k": "Air temperature [K]",
+    "process_temperature_k": "Process temperature [K]",
+    "rotational_speed_rpm": "Rotational speed [rpm]",
+    "torque_nm": "Torque [Nm]",
+    "tool_wear_min": "Tool wear [min]",
+    "temp_delta_k": "Process-air temperature gap [K]",
+    "power_w": "Mechanical power [W]",
+    "strain_nm_min": "Tool wear x torque [Nm\u00b7min]"
+  },
+  "sensor_fields": [
+    "air_temperature_k",
+    "process_temperature_k",
+    "rotational_speed_rpm",
+    "torque_nm",
+    "tool_wear_min"
+  ],
+  "feature_ranges": {
+    "quality_code": {
+      "min": 0.0,
+      "max": 2.0,
+      "p01": 0.0,
+      "p50": 0.0,
+      "p99": 2.0
+    },
+    "air_temperature_k": {
+      "min": 292.6,
+      "max": 308.3,
+      "p01": 295.5,
+      "p50": 300.0,
+      "p99": 304.6
+    },
+    "process_temperature_k": {
+      "min": 302.5,
+      "max": 318.5,
+      "p01": 305.0,
+      "p50": 310.0,
+      "p99": 315.2
+    },
+    "rotational_speed_rpm": {
+      "min": 1150.0,
+      "max": 2082.0,
+      "p01": 1208.99,
+      "p50": 1541.0,
+      "p99": 1878.0
+    },
+    "torque_nm": {
+      "min": 3.0,
+      "max": 83.3,
+      "p01": 16.898999999999997,
+      "p50": 39.9,
+      "p99": 63.4
+    },
+    "tool_wear_min": {
+      "min": 0.0,
+      "max": 250.0,
+      "p01": 2.0,
+      "p50": 125.0,
+      "p99": 247.0
+    },
+    "temp_delta_k": {
+      "min": 6.600000000000023,
+      "max": 13.5,
+      "p01": 7.699999999999989,
+      "p50": 10.0,
+      "p99": 12.5
+    },
+    "power_w": {
+      "min": 641.1990605976767,
+      "max": 10114.357548232338,
+      "p01": 3188.1880227895513,
+      "p50": 6400.429545011557,
+      "p99": 8760.54264844048
+    },
+    "strain_nm_min": {
+      "min": 0.0,
+      "max": 17576.3,
+      "p01": 88.475,
+      "p50": 4700.1,
+      "p99": 13048.200000000004
+    }
+  },
+  "feature_importance_gain": {
+    "quality_code": 785.391427397728,
+    "air_temperature_k": 542.5610989332199,
+    "process_temperature_k": 584.5039895772934,
+    "rotational_speed_rpm": 5006.582881331444,
+    "torque_nm": 3259.343968153,
+    "tool_wear_min": 15855.390075206757,
+    "temp_delta_k": 3666.050513982773,
+    "power_w": 12376.61079287529,
+    "strain_nm_min": 10671.224403381348
+  },
+  "risk_thresholds": {
+    "medium": 0.23283187329286023,
+    "high": 0.5820796832321505
+  },
+  "models": {
+    "modes": {
+      "TWF": {
+        "file": "mode_TWF.txt",
+        "name": "Tool wear failure",
+        "threshold": 0.12401579033301222,
+        "val_f1": 0.37681159420289856,
+        "reliable": false,
+        "test_metrics": {
+          "n": 1500,
+          "positives": 69,
+          "prevalence": 0.046,
+          "threshold": 0.12401579033301222,
+          "roc_auc": 0.9513667345223267,
+          "pr_auc": 0.3506240356607383,
+          "precision": 0.2995391705069124,
+          "recall": 0.9420289855072463,
+          "f1": 0.45454545454545453,
+          "confusion_matrix": [
+            [
+              1279,
+              152
+            ],
+            [
+              4,
+              65
+            ]
+          ]
+        }
+      },
+      "HDF": {
+        "file": "mode_HDF.txt",
+        "name": "Heat dissipation failure",
+        "threshold": 0.9458785921567987,
+        "val_f1": 0.9743589743589743,
+        "reliable": true,
+        "test_metrics": {
+          "n": 1500,
+          "positives": 14,
+          "prevalence": 0.009333333333333334,
+          "threshold": 0.9458785921567987,
+          "roc_auc": 1.0,
+          "pr_auc": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "confusion_matrix": [
+            [
+              1486,
+              0
+            ],
+            [
+              0,
+              14
+            ]
+          ]
+        }
+      },
+      "PWF": {
+        "file": "mode_PWF.txt",
+        "name": "Power failure",
+        "threshold": 0.8062978676129788,
+        "val_f1": 0.9491525423728814,
+        "reliable": true,
+        "test_metrics": {
+          "n": 1500,
+          "positives": 38,
+          "prevalence": 0.025333333333333333,
+          "threshold": 0.8062978676129788,
+          "roc_auc": 0.99953200374397,
+          "pr_auc": 0.98371395103253,
+          "precision": 1.0,
+          "recall": 0.8421052631578947,
+          "f1": 0.9142857142857143,
+          "confusion_matrix": [
+            [
+              1462,
+              0
+            ],
+            [
+              6,
+              32
+            ]
+          ]
+        }
+      },
+      "OSF": {
+        "file": "mode_OSF.txt",
+        "name": "Overstrain failure",
+        "threshold": 0.40168054821316085,
+        "val_f1": 0.9830508474576272,
+        "reliable": true,
+        "test_metrics": {
+          "n": 1500,
+          "positives": 48,
+          "prevalence": 0.032,
+          "threshold": 0.40168054821316085,
+          "roc_auc": 1.0,
+          "pr_auc": 1.0,
+          "precision": 0.96,
+          "recall": 1.0,
+          "f1": 0.9795918367346939,
+          "confusion_matrix": [
+            [
+              1450,
+              2
+            ],
+            [
+              0,
+              48
+            ]
+          ]
+        }
+      }
+    },
+    "failure": {
+      "file": "failure.txt",
+      "threshold": 0.5820796832321505,
+      "test_metrics": {
+        "n": 1500,
+        "positives": 148,
+        "prevalence": 0.09866666666666667,
+        "threshold": 0.5820796832321505,
+        "roc_auc": 0.9789600991524069,
+        "pr_auc": 0.8674254794482464,
+        "precision": 0.956989247311828,
+        "recall": 0.6013513513513513,
+        "f1": 0.7385892116182573,
+        "confusion_matrix": [
+          [
+            1348,
+            4
+          ],
+          [
+            59,
+            89
+          ]
+        ]
+      }
+    }
+  },
+  "caveats": [
+    "Trained on SIMULATED data (the real AI4I dataset was not available). Fine for a demo; retrain with real data before quoting any numbers.",
+    "AI4I 2020 is a synthetic dataset whose labels follow published rules; scores on it overstate real-world performance.",
+    "Contributions are SHAP values in log-odds space (LightGBM pred_contrib); they explain the model, not physics.",
+    "Random failures (RNF) are not modelled because they are random by construction.",
+    "Failure-mode models with validation F1 below min_mode_val_f1 are shown as low-confidence and never raise flags."
+  ]
+}

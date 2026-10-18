@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telltale-ml"
+version = "0.1.0"
+description = "Telltale ML: sensor failure-risk models and machine-sound anomaly / fault models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+# Inference dependencies only. Keep training/evaluation libraries out of the serverless bundle.
+# Acoustic feature extraction is implemented in audio_ops.py with NumPy/SciPy.
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "scipy>=1.13.1,<1.14",
+  "lightgbm>=4.3",
+  "soundfile>=0.12",
+  "onnxruntime>=1.18",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Training/evaluation only; inference does not need scikit-learn or ONNX export tooling.
+train = ["onnx>=1.16", "tqdm>=4.66", "scikit-learn>=1.4"]
+# Plain CPU/CUDA torch from PyPI. Do NOT install this extra inside the ROCm image:
+# the rocm/pytorch base image already ships a ROCm build of torch.
+torch = ["torch>=2.3"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+telltale-download = "telltale_ml.datasets.download:main"
+telltale-train-sensor = "telltale_ml.sensor.train:main"
+telltale-train-acoustic = "telltale_ml.acoustic.train_anomaly:main"
+telltale-train-bearing = "telltale_ml.acoustic.train_fault:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]

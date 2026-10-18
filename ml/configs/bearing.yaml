@@ -1,0 +1,68 @@
+# Bearing-fault classifier from sound. Used by `telltale-train-bearing`.
+# Dataset: "Sound Datasets of a Rolling Element Bearing under Various Operating Conditions"
+#          Mendeley Data n9y9c7xrz3 (CC BY 4.0), SKF 6004 bearings, downloaded automatically (75 MB).
+# Layout: 2 recording setups ("Datasets 1" with a stethoscope, "Datasets 2" without)
+#         x 6 cases ("Case 1 - Inner race fault" ... "Case 6 - Combined faults (Inner, outer, ball)")
+#         x 3 speeds (~600 / 1200 / 1800 rpm). Files are MATLAB .mat (variable "x", 44.1 kHz, 2-20 s).
+# Classes are inferred from the folder names with the keywords below; check the printed
+# "label_counts" / "unlabelled_files" after training.
+seed: 42
+data_root: null               # null -> data/raw/bearing_sound
+
+features:
+  sample_rate: 44100
+  segment_seconds: 1.0
+  hop_seconds: 0.5
+  n_fft: 2048
+  hop_length: 512
+  n_mels: 64
+  channel: 0
+  envelope_band_hz: [1000, 10000]   # band demodulated for the envelope spectrum
+  envelope_bins: 32
+  order_bins: 32                    # envelope spectrum in shaft orders (needs rpm; 0 = off)
+  order_range: [0.5, 30]
+  default_rpm: 1200                 # assumed when the speed of an upload is unknown
+
+classes:
+  normal:     { label: "Healthy bearing",   keywords: ["normal", "healthy"] }
+  inner_race: { label: "Inner race defect", keywords: ["inner", "ir"] }
+  outer_race: { label: "Outer race defect", keywords: ["outer", "or"] }
+  ball:       { label: "Ball element defect", keywords: ["ball", "be"] }
+  looseness:  { label: "Looseness",         keywords: ["loose", "looseness"] }
+  # "Combined faults (Inner, outer, ball)" also matches inner/outer/ball; match_first makes it win.
+  combined:   { label: "Combined faults (inner + outer + ball)", keywords: ["combined"], match_first: true }
+
+max_audio_seconds: 60
+
+# Simulated-microphone training copies (random EQ +-eq_db, gain, noise). Improves accuracy on a NEW
+# recording setup (leave-one-setup-out ~32% -> ~45%, seed-dependent) at a small cost on familiar setups.
+augmentation:
+  copies: 3
+  eq_db: 9
+  gain_db: [-12, 6]
+  noise: [0.001, 0.01]
+
+# Conformal prediction sets: return every class that can't be ruled out at this error rate.
+conformal:
+  alpha: 0.1        # target: the set contains the true class 90% of the time
+
+# How the model is tested (see the docstring of acoustic/train_fault.py).
+# A recording's "condition" = setup + speed band, parsed from its path:
+#   ".../Datasets 1- Data acquisition using the stethoscope/.../Second speed - 1236rpm.mat" -> "1-1200"
+evaluation:
+  setup_regex: 'Datasets (\d)'
+  rpm_regex: '(\d{3,4})\s*rpm'
+  rpm_bands: [600, 1200, 1800]
+  # Kept out of the final model; its recordings become the demo clips in the web app.
+  demo_holdout: "1-1200"
+
+lightgbm:
+  objective: multiclass
+  n_estimators: 400
+  learning_rate: 0.05
+  num_leaves: 15
+  min_child_samples: 10
+  colsample_bytree: 0.7
+  verbose: -1
+
+output_subdir: bearing

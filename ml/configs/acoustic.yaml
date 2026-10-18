@@ -1,0 +1,59 @@
+# Machine-sound anomaly detector. Used by `telltale-train-acoustic`.
+seed: 42
+
+# ensemble (default): ArcFace CNN embeddings + classical spectra, nearest-neighbour scoring (see train_ensemble.py)
+#   MIMII DUE fan, section unknown: DCASE hmean ~0.64 (autoencoder: ~0.58)
+# autoencoder: the DCASE 2020/2021 reconstruction baseline
+method: ensemble
+
+dataset: mimii_due          # mimii_due (Zenodo 4740355, recommended: ~1.1 GB/type) | mimii (Zenodo 3384388)
+machine_type: fan           # mimii_due: fan|gearbox|pump|slider|valve   mimii: fan|pump|slider|valve
+data_root: null             # null -> data/raw/<dataset>
+
+features:
+  sample_rate: 16000
+  n_fft: 1024
+  hop_length: 512
+  n_mels: 128
+  power: 2.0
+  frames: 5
+  channel: 0
+
+train:
+  val_fraction: 0.1          # of normal training clips, used to set the threshold
+  max_train_clips: null      # cap for quick runs, e.g. 300
+  vectors_per_clip: 64       # random subsample of stacked vectors per clip (memory control)
+  epochs: 20                 # ensemble CNN: ~1 min/epoch on a laptop CPU, seconds on an AMD GPU
+  batch_size: 512
+  learning_rate: 0.001
+  device: auto               # auto | cuda | cpu   (on ROCm, "cuda" means your AMD GPU)
+  num_workers: 4             # parallel feature extraction processes
+
+ensemble:
+  calibration_fraction: 0.1  # normal source clips per section held out for threshold + p-values
+  batch_size: 64
+  crop_frames: 192           # random ~6 s crops while training the CNN
+  emb_dim: 128
+  arcface_scale: 30.0
+  arcface_margin: 0.5
+  learning_rate: 0.002
+  n_models: 1                # CNNs averaged; 3 is steadier but 3x slower (fine on an AMD GPU)
+  only_evaluated_groups: true  # skip sections without labelled test clips (extra sections hurt on fan)
+  weight_arc: 0.5            # equal weights, chosen up front (not tuned on test data)
+  weight_cls: 0.5
+  watch_alpha: 0.15          # p-value below this -> "watch"; below 1 - threshold_percentile/100 -> "anomalous"
+  window_frames: 64          # ~2 s windows for the "when did it sound odd" timeline
+  window_hop_frames: 16
+
+model:                       # autoencoder method only
+  hidden: 128
+  bottleneck: 8
+  depth: 4
+
+# Anomaly threshold = this percentile of clip scores on held-out NORMAL clips.
+threshold_percentile: 95
+# "watch" status starts at this fraction of the threshold.
+watch_fraction: 0.85
+max_audio_seconds: 30
+
+output_subdir: acoustic     # -> <models>/acoustic/<machine_type>/

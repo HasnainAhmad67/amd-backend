@@ -1,0 +1,37 @@
+# syntax=docker/dockerfile:1.7
+# AMD GPU (ROCm) training image — for AMD Developer Cloud / Instinct MI300X or a local Radeon/Instinct card.
+#
+# The base image ships a ROCm build of PyTorch; we only add our package on top and must NOT
+# reinstall torch from PyPI (that would replace it with a CUDA/CPU build).
+#
+# Pick the tag that matches the host's ROCm driver: https://hub.docker.com/r/rocm/pytorch/tags
+# and pass it with:  docker compose -f docker-compose.yml -f docker-compose.rocm.yml build --build-arg ROCM_PYTORCH_IMAGE=...
+#
+# Verify the GPU inside the container:
+#   python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+#   (ROCm PyTorch exposes AMD GPUs through the torch.cuda API.)
+
+ARG ROCM_PYTORCH_IMAGE=rocm/pytorch:rocm6.2_ubuntu22.04_py3.10_pytorch_release_2.3.0
+FROM ${ROCM_PYTORCH_IMAGE}
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DEFAULT_TIMEOUT=120 \
+    PIP_RETRIES=10 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    TELLTALE_DATA_DIR=/workspace/data \
+    TELLTALE_MODELS_DIR=/workspace/models
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libsndfile1 libgomp1 \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /workspace
+
+COPY ml/pyproject.toml ml/README.md ml/
+COPY ml/src ml/src
+# No [torch] extra here on purpose.
+RUN --mount=type=cache,target=/root/.cache/pip pip install -e "./ml[train,dev]" \
+ && python -c "import torch; print('torch', torch.__version__, 'hip', getattr(torch.version, 'hip', None))"
+COPY AGENTS.md ./
+COPY ml/configs ml/configs
+
+CMD ["bash"]

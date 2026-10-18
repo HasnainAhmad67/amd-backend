@@ -1,0 +1,117 @@
+# Inspection playbook: maps model outputs to human inspection steps.
+# This is deliberately a plain data file so maintenance engineers (not just developers) can edit it.
+# Keys must match: sensor failure-mode codes, sensor feature names, acoustic machine types, bearing classes.
+
+failure_modes:
+  TWF:
+    title: Tool wear — plan a tool change
+    steps:
+      - Inspect the cutting tool for flank wear, chipping and built-up edge.
+      - Compare accumulated tool wear with the tool's rated life; replace if within ~10% of the limit.
+      - After replacement, check tool clamping and runout.
+      - Record the tool change in the CMMS so the wear counter resets.
+  HDF:
+    title: Heat dissipation — check cooling
+    steps:
+      - Verify coolant flow / cooling-air fan operation and look for blocked filters or fins.
+      - Check the process-to-ambient temperature gap; a small gap at low spindle speed means heat is not leaving the process.
+      - Confirm temperature sensor calibration (air and process).
+      - Avoid prolonged low-speed operation until cooling is restored.
+  PWF:
+    title: Power outside the safe window
+    steps:
+      - Compare spindle power (torque x speed) with the drive's rated operating window.
+      - "High power: look for a blunt tool, jammed feed or wrong material. Low power: check for slipping belts or idle running."
+      - Inspect the drive, motor and supply for overheating or voltage sags.
+      - Adjust feed / speed parameters to bring power back in range.
+  OSF:
+    title: Overstrain — reduce load or replace tool
+    steps:
+      - Reduce feed rate or depth of cut to lower torque.
+      - Replace the tool — wear x torque is approaching the overstrain limit for this product quality.
+      - Inspect spindle bearings, couplings and fixtures for overload damage.
+      - Re-check after the change; the overstrain indicator should fall immediately.
+
+drivers:
+  tool_wear_min: Tool wear is one of the strongest drivers of the current risk estimate.
+  torque_nm: Torque is elevated relative to normal operation — check tool sharpness, feed and material.
+  rotational_speed_rpm: Spindle speed is pushing risk up — verify the programmed speed and drive behaviour.
+  temp_delta_k: The process-air temperature gap is small — cooling headroom is limited.
+  process_temperature_k: Process temperature is contributing to risk — check cooling and lubrication.
+  air_temperature_k: Ambient temperature is contributing to risk — check hall ventilation / HVAC.
+  power_w: Mechanical power is outside its usual band.
+  strain_nm_min: Combined tool wear x torque (strain) is high.
+
+acoustic:
+  default:
+    title: Abnormal machine sound
+    steps:
+      - Listen on site and compare with the reference sound for this machine type.
+      - Check for loose covers, fixings and anything touching moving parts.
+      - Take a vibration reading at the bearings and compare with the baseline.
+      - Re-record in the same position and conditions to rule out background noise.
+  fan:
+    title: Fan sounds abnormal
+    steps:
+      - Check for imbalance — dirt build-up, damaged or loose blades.
+      - Listen to the bearings with a stethoscope or take a vibration reading.
+      - Inspect belt tension and alignment (belt-driven fans).
+      - Clear any blockage in inlet or outlet ducts.
+  pump:
+    title: Pump sounds abnormal
+    steps:
+      - Check for cavitation — suction pressure, NPSH margin and air ingress.
+      - Inspect seals and connections for leakage.
+      - Check the inlet strainer / impeller for clogging or contamination.
+      - Verify bearing condition and coupling alignment.
+  slider:
+    title: Slide rail sounds abnormal
+    steps:
+      - Inspect the rail surface for scoring, damage or debris.
+      - Check lubrication of the linear guides and ball screw.
+      - Check belt tension and carriage fixings.
+  valve:
+    title: Valve sounds abnormal
+    steps:
+      - Inspect the valve seat for contamination.
+      - Check actuation timing and supply pressure.
+      - Look and listen for leaks around the body and fittings.
+  gearbox:
+    title: Gearbox sounds abnormal
+    steps:
+      - Check oil level and condition (look for metal particles).
+      - Inspect gear teeth for wear, pitting or broken teeth.
+      - Check bearing play and shaft alignment.
+      - Verify mounting bolts are torqued to spec.
+
+bearing:
+  inner_race:
+    title: Suspected inner-race bearing defect
+    steps:
+      - Confirm with vibration envelope analysis at BPFI (ball-pass frequency, inner race).
+      - Check lubrication condition and grease contamination.
+      - Plan bearing replacement; inner-race defects usually progress quickly under load.
+  outer_race:
+    title: Suspected outer-race bearing defect
+    steps:
+      - Confirm with vibration envelope analysis at BPFO (ball-pass frequency, outer race).
+      - Check housing fit and seating of the outer ring.
+      - Schedule bearing replacement at the next planned stop.
+  ball:
+    title: Suspected rolling-element (ball) defect
+    steps:
+      - Confirm with vibration analysis at BSF (ball spin frequency).
+      - Inspect lubricant for debris; check for contamination ingress at the seals.
+      - Schedule bearing replacement.
+  combined:
+    title: Suspected multiple bearing defects
+    steps:
+      - Treat as a badly damaged bearing - plan replacement at the earliest safe stop.
+      - Check lubrication, contamination and installation quality; several simultaneous defects usually have a common cause.
+      - Inspect the shaft and housing seats for damage before fitting the new bearing.
+  looseness:
+    title: Suspected mechanical looseness
+    steps:
+      - Check bearing housing and mounting bolts for looseness.
+      - Inspect shaft-to-bearing fit for wear or fretting.
+      - Re-torque fixings and re-measure; replace worn parts if the sound persists.

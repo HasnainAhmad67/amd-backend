@@ -1,0 +1,14 @@
+# Demo fleet for the live simulator. Each machine streams AI4I-style telemetry.
+#   product_quality:  L | M | H  (AI4I product variant; drives tool-wear speed and overstrain limit)
+#   acoustic_profile: which sound model to use for uploads on this machine (fan|pump|slider|valve|gearbox|null)
+#   scenario:         healthy | tool_wear | cooling_fault | overload | power_anomaly
+#                     (what the simulator injects — shown in the UI as "simulated", never used by the models)
+machines:
+  - { id: cnc-a1, name: "CNC Mill A1",   line: "Line A", product_quality: M, acoustic_profile: fan,     scenario: healthy }
+  - { id: cnc-a2, name: "CNC Mill A2",   line: "Line A", product_quality: L, acoustic_profile: fan,     scenario: tool_wear }
+  - { id: cnc-a3, name: "CNC Mill A3",   line: "Line A", product_quality: H, acoustic_profile: fan,     scenario: healthy }
+  - { id: lth-b1, name: "Lathe B1",      line: "Line B", product_quality: L, acoustic_profile: pump,    scenario: cooling_fault }
+  - { id: lth-b2, name: "Lathe B2",      line: "Line B", product_quality: M, acoustic_profile: gearbox, scenario: overload }
+  - { id: lth-b3, name: "Lathe B3",      line: "Line B", product_quality: M, acoustic_profile: pump,    scenario: healthy }
+  - { id: drl-c1, name: "Drill Cell C1", line: "Line C", product_quality: M, acoustic_profile: slider,  scenario: power_anomaly }
+  - { id: drl-c2, name: "Drill Cell C2", line: "Line C", product_quality: L, acoustic_profile: valve,   scenario: healthy }
